@@ -2,8 +2,8 @@
 
 Exchange rates aggregator service
 
-[HEROKU](https://quiet-gorge-67795.herokuapp.com)
-[SWAGGER](https://quiet-gorge-67795.herokuapp.com/swagger-ui.html#/)
+* Demo: https://quiet-gorge-67795.herokuapp.com
+* Swagger: https://quiet-gorge-67795.herokuapp.com/swagger-ui.html#/
 
 Загрузить файл в систему (с помощью RESTful API)
 
