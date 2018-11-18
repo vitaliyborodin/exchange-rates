@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 m-2">
+            <h3 class="text-center">Exchange rates aggregation service</h3>
+            <small class="text-muted text-center"><a href="https://github.com/vitaliyborodin/exchange-rates">More info on GitHub</a></small>
+        </div>
+    </div>
+    <div class="row">
+
+    </div>
+
+    <div class="card-deck">
+        <div class="card border-dark mb-3">
+            <div class="card-header">CSV format</div>
+            <div class="card-body text-dark">
+                <p class="card-text">
+                    <pre><code>
+USD,25.90,26.10
+UAH,1,1
+EUR,33,33
+                    </code></pre>
+                </p>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted"><a href="/CSV BANK.CSV">Download</a></small>
+            </div>
+        </div>
+        <div class="card border-dark mb-3">
+            <div class="card-header">JSON format</div>
+            <div class="card-body text-dark">
+                <p class="card-text">
+<pre><code>
+[
+ {"currency": "UAH",
+ "buy"     : "1",
+ "sell"    : "1"},
+ {"currency": "USD",
+ "buy"     : "28",
+ "sell"    : "28"},
+ {"currency": "EUR",
+ "buy"     : "31",
+ "sell"    : "31"}
+]
+</code></pre>
+                </p>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted"><a href="/JSON BANK.CSV">Download</a></small>
+            </div>
+        </div>
+        <div class="card border-dark mb-3">
+            <div class="card-header">XML format</div>
+            <div class="card-body text-dark">
+                <p class="card-text">
+                <pre><code>
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;rates&gt;
+  &lt;exchangeRate&gt;
+    &lt;currency&gt;EUR&lt;/currency&gt;
+    &lt;buy&gt;30&lt;/buy&gt;
+    &lt;sell&gt;30&lt;/sell&gt;
+  &lt;/exchangeRate&gt;
+  &lt;exchangeRate&gt;
+    &lt;currency&gt;USD&lt;/currency&gt;
+    &lt;buy&gt;27&lt;/buy&gt;
+    &lt;sell&gt;27&lt;/sell&gt;
+  &lt;/exchangeRate&gt;
+  &lt;exchangeRate&gt;
+    &lt;currency&gt;UAH&lt;/currency&gt;
+    &lt;buy&gt;1&lt;/buy&gt;
+    &lt;sell&gt;1&lt;/sell&gt;
+  &lt;/exchangeRate&gt;
+&lt;/rates&gt;
+</code></pre>
+                </p>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted"><a href="/XML BANK.CSV">Download</a></small>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
+</html>

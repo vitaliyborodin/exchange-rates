@@ -90,7 +90,7 @@
 
 			<plugin>
 				<configuration>
-					<appName>secret-dusk-23563</appName>
+					<appName>quiet-gorge-67795</appName>
 					<processTypes>
 						<web>java $JAVA_OPTS -cp target/classes:target/dependency/* Main</web>
 					</processTypes>

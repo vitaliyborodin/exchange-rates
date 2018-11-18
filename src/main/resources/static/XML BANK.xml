@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rates>
+	<exchangeRate>
+		<currency>EUR</currency>
+		<buy>30</buy>
+		<sell>30</sell>
+	</exchangeRate>
+	<exchangeRate>
+		<currency>USD</currency>
+		<buy>27</buy>
+		<sell>27</sell>
+	</exchangeRate>
+	<exchangeRate>
+		<currency>UAH</currency>
+		<buy>1</buy>
+		<sell>1</sell>
+	</exchangeRate>
+</rates>

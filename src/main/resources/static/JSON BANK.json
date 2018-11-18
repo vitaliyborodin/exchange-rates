@@ -1,0 +1,11 @@
+[
+	{"currency": "UAH", 
+	"buy": "1", 
+	"sell": "1"}, 
+	{"currency": "USD", 
+	"buy": "28", 
+	"sell": "28"}, 
+	{"currency": "EUR", 
+	"buy": "31", 
+	"sell": "31"}
+]
