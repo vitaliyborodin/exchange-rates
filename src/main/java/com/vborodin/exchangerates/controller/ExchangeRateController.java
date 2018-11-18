@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +28,7 @@ public class ExchangeRateController {
     }
 
     @RequestMapping(value = "/exchangerates", method = RequestMethod.GET)
-    public Iterable<ExchangeRate> exchangerates(@RequestParam(value = "currency", required = false) String currency,
+    public Iterable<ExchangeRate> exchangeRates(@RequestParam(value = "currency", required = false) String currency,
                                                 @RequestParam(value = "bank", required = false) String bank,
                                                 @RequestParam(value = "orderBy", required = false) String orderBy) {
 
@@ -55,15 +57,33 @@ public class ExchangeRateController {
     }
 
     @RequestMapping(value = "/exchangerates/{currency}/buy/{bank}", method = RequestMethod.DELETE)
-    public int deletebuy(@PathVariable("currency") String currency,
+    public int deleteBuyBycurrencyAndBank(@PathVariable("currency") String currency,
                                             @PathVariable("bank") String bank){
         return exchangeRateRepository.resetBuyByCurrencyAndBank(currency, bank);
     }
 
     @RequestMapping(value = "/exchangerates/{currency}/sell/{bank}", method = RequestMethod.DELETE)
-    public int deletesellbycurrencyandbank(@PathVariable("currency") String currency,
+    public int deleteSellBycurrencyAndBank(@PathVariable("currency") String currency,
                                              @PathVariable("bank") String bank){
         return exchangeRateRepository.resetSellByCurrencyAndBank(currency, bank);
+    }
+
+    @RequestMapping(value = "/exchangerates/{currency}/buy/{bank}", method = RequestMethod.PUT)
+    public ExchangeRate putBuyByCurrencyAndBank(@PathVariable("currency") String currency,
+                         @PathVariable("bank") String bank,
+                         @RequestBody String value){
+        ExchangeRate rate = exchangeRateRepository.findByIdCurrencyAndIdBank(currency, bank);
+        rate.setBuy(new BigDecimal(value));
+        return exchangeRateRepository.save(rate);
+    }
+
+    @RequestMapping(value = "/exchangerates/{currency}/sell/{bank}", method = RequestMethod.PUT)
+    public ExchangeRate putSellByCurrencyAndBank(@PathVariable("currency") String currency,
+                                           @PathVariable("bank") String bank,
+                                           @RequestBody String value){
+        ExchangeRate rate = exchangeRateRepository.findByIdCurrencyAndIdBank(currency, bank);
+        rate.setSell(new BigDecimal(value));
+        return exchangeRateRepository.save(rate);
     }
 
     @RequestMapping(value = "/exchangerates/buy/{bank}", method = RequestMethod.DELETE)
@@ -77,12 +97,12 @@ public class ExchangeRateController {
     }
 
     @RequestMapping(value = "/exchangerates/{currency}/bestbuy", method = RequestMethod.GET)
-    public ExchangeRate bestbuy(@PathVariable("currency") String currency){
+    public ExchangeRate bestBuy(@PathVariable("currency") String currency){
         return exchangeRateRepository.findTopByIdCurrencyOrderByBuyDesc(currency);
     }
 
     @RequestMapping(value = "/exchangerates/{currency}/bestsell", method = RequestMethod.GET)
-    public ExchangeRate bestsell(@PathVariable("currency") String currency){
+    public ExchangeRate bestSell(@PathVariable("currency") String currency){
         return exchangeRateRepository.findTopByIdCurrencyAndSellNotNullOrderBySellAsc(currency);
     }
 
