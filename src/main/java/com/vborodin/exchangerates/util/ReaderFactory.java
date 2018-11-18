@@ -15,7 +15,7 @@ public class ReaderFactory {
             reader = new CSVReader(file);
         } else if (extension.equalsIgnoreCase("JSON")) {
             reader = new JSONReader(file);
-        }
+        } else throw new RuntimeException("Unsupported file");
         return reader;
     }
 }
