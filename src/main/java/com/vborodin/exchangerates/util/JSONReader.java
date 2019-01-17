@@ -5,6 +5,8 @@ import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -17,15 +19,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JSONReader implements Reader {
+    private Logger logger = LoggerFactory.getLogger(JSONReader.class);
+
     private MultipartFile file;
 
-    public JSONReader(MultipartFile file) {
+    JSONReader(MultipartFile file) {
         this.file = file;
     }
 
     @Override
     public List<ExchangeRate> read() {
-        BufferedReader br;
         List<ExchangeRate> exchangeRateList = new ArrayList<>();
 
         try {
@@ -51,7 +54,7 @@ public class JSONReader implements Reader {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.toString());
         }
 
         return exchangeRateList;

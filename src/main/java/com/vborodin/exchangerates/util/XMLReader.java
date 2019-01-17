@@ -3,12 +3,15 @@ package com.vborodin.exchangerates.util;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,10 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XMLReader implements Reader {
+    private Logger logger = LoggerFactory.getLogger(XMLReader.class);
 
     private MultipartFile file;
 
-    public XMLReader(MultipartFile file) {
+    XMLReader(MultipartFile file) {
         this.file = file;
     }
 
@@ -63,12 +67,8 @@ public class XMLReader implements Reader {
                 }
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            logger.error(e.toString());
         }
 
         return exchangeRateList;

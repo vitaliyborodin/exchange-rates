@@ -4,12 +4,14 @@ import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import com.vborodin.exchangerates.repository.ExchangeRateRepository;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 @Component
+@Profile("dev")
 public class DevBootstrap implements ApplicationListener<ContextRefreshedEvent> {
 
     private ExchangeRateRepository exchangeRateRepository;

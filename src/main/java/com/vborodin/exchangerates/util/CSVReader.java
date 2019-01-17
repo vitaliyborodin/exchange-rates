@@ -3,6 +3,8 @@ package com.vborodin.exchangerates.util;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -15,9 +17,11 @@ import java.util.List;
 
 public class CSVReader implements Reader {
 
+    private Logger logger = LoggerFactory.getLogger(CSVReader.class);
+
     private MultipartFile file;
 
-    public CSVReader(MultipartFile file) {
+    CSVReader(MultipartFile file) {
         this.file = file;
     }
 
@@ -44,7 +48,7 @@ public class CSVReader implements Reader {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.toString());
         }
 
         return exchangeRateList;

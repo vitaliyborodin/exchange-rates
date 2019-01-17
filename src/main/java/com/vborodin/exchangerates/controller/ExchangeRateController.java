@@ -20,17 +20,16 @@ import java.util.List;
 @RestController
 public class ExchangeRateController {
 
-    ExchangeRateRepository exchangeRateRepository;
+    private ExchangeRateRepository exchangeRateRepository;
 
     @Autowired
     public ExchangeRateController(ExchangeRateRepository exchangeRateRepository) {
         this.exchangeRateRepository = exchangeRateRepository;
     }
 
-    @RequestMapping(value = "/exchangerates", method = RequestMethod.GET)
+    @GetMapping(value = "/exchangerates")
     public Iterable<ExchangeRate> exchangeRates(@RequestParam(value = "currency", required = false) String currency,
-                                                @RequestParam(value = "bank", required = false) String bank,
-                                                @RequestParam(value = "orderBy", required = false) String orderBy) {
+                                                @RequestParam(value = "bank", required = false) String bank) {
 
         if(currency != null && bank == null)
             return exchangeRateRepository.findByIdCurrencyIgnoreCase(currency);
@@ -42,33 +41,33 @@ public class ExchangeRateController {
             return exchangeRateRepository.findAll();
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/buy", method = RequestMethod.GET)
+    @GetMapping(value = "/exchangerates/{currency}/buy")
     public Iterable<ExchangeRate> buy(@PathVariable("currency") String currency,
                                       @RequestParam(value = "orderBy", required = false) String orderBy){
         Sort sort = createSortObject(orderBy);
         return exchangeRateRepository.findByIdCurrencyAndBuyNotNull(currency, sort);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/sell", method = RequestMethod.GET)
+    @GetMapping(value = "/exchangerates/{currency}/sell")
     public Iterable<ExchangeRate> sell(@PathVariable("currency") String currency,
                                        @RequestParam(value = "orderBy", required = false) String orderBy){
         Sort sort = createSortObject(orderBy);
         return exchangeRateRepository.findByIdCurrencyAndSellNotNull(currency, sort);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/buy/{bank}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/exchangerates/{currency}/buy/{bank}")
     public int deleteBuyBycurrencyAndBank(@PathVariable("currency") String currency,
                                             @PathVariable("bank") String bank){
         return exchangeRateRepository.resetBuyByCurrencyAndBank(currency, bank);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/sell/{bank}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/exchangerates/{currency}/sell/{bank}")
     public int deleteSellBycurrencyAndBank(@PathVariable("currency") String currency,
                                              @PathVariable("bank") String bank){
         return exchangeRateRepository.resetSellByCurrencyAndBank(currency, bank);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/buy/{bank}", method = RequestMethod.PUT)
+    @PutMapping(value = "/exchangerates/{currency}/buy/{bank}")
     public ExchangeRate putBuyByCurrencyAndBank(@PathVariable("currency") String currency,
                          @PathVariable("bank") String bank,
                          @RequestBody String value){
@@ -77,7 +76,7 @@ public class ExchangeRateController {
         return exchangeRateRepository.save(rate);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/sell/{bank}", method = RequestMethod.PUT)
+    @PutMapping(value = "/exchangerates/{currency}/sell/{bank}")
     public ExchangeRate putSellByCurrencyAndBank(@PathVariable("currency") String currency,
                                            @PathVariable("bank") String bank,
                                            @RequestBody String value){
@@ -86,27 +85,27 @@ public class ExchangeRateController {
         return exchangeRateRepository.save(rate);
     }
 
-    @RequestMapping(value = "/exchangerates/buy/{bank}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/exchangerates/buy/{bank}")
     public int deleteBuyByBank(@PathVariable("bank") String bank){
         return exchangeRateRepository.resetBuyByBank(bank);
     }
 
-    @RequestMapping(value = "/exchangerates/sell/{bank}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/exchangerates/sell/{bank}")
     public int deleteSellByBank(@PathVariable("bank") String bank){
         return exchangeRateRepository.resetSellByBank(bank);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/bestbuy", method = RequestMethod.GET)
+    @GetMapping(value = "/exchangerates/{currency}/bestbuy")
     public ExchangeRate bestBuy(@PathVariable("currency") String currency){
         return exchangeRateRepository.findTopByIdCurrencyOrderByBuyDesc(currency);
     }
 
-    @RequestMapping(value = "/exchangerates/{currency}/bestsell", method = RequestMethod.GET)
+    @GetMapping(value = "/exchangerates/{currency}/bestsell")
     public ExchangeRate bestSell(@PathVariable("currency") String currency){
         return exchangeRateRepository.findTopByIdCurrencyAndSellNotNullOrderBySellAsc(currency);
     }
 
-    @RequestMapping(value = "/exchangerates/report", method = RequestMethod.GET)
+    @GetMapping(value = "/exchangerates/report")
     public List<BestRate> report(){
         List<BestRate> result = new ArrayList<>();
         Iterable<ExchangeRate> allRates = exchangeRateRepository.findAll();
@@ -116,10 +115,9 @@ public class ExchangeRateController {
             currencies.add(er.getId().getCurrency());
         }
 
-        currencies = new ArrayList<String>(new HashSet<String>(currencies));
+        currencies = new ArrayList<>(new HashSet<>(currencies));
 
         for (String c : currencies) {
-            System.out.println(c);
             BestRate item = new BestRate();
             item.setCurrency(c);
             ExchangeRate bestBuyRate = exchangeRateRepository.findTopByIdCurrencyOrderByBuyDesc(c);
@@ -135,7 +133,7 @@ public class ExchangeRateController {
         return result;
     }
 
-    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    @PostMapping(value = "/upload")
     public Iterable<ExchangeRate> handleFileUpload(@RequestParam("file") MultipartFile file) {
 
         List<ExchangeRate> exchangeRates = ReaderFactory.getReader(file).read();
@@ -154,7 +152,7 @@ public class ExchangeRateController {
         if (parts.length > 0) orderField = parts[0];
         if (parts.length > 1) orderType = parts[1].toUpperCase();
 
-        return new Sort(new Sort.Order(Sort.Direction.valueOf(orderType), orderField));
+        return Sort.by(new Sort.Order(Sort.Direction.valueOf(orderType), orderField));
     }
 
 }
