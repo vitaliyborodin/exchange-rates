@@ -1,5 +1,6 @@
 package com.vborodin.exchangerates.util;
 
+import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
@@ -22,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XMLReader implements Reader {
-    private Logger logger = LoggerFactory.getLogger(XMLReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(XMLReader.class);
 
     private MultipartFile file;
 
@@ -34,8 +35,7 @@ public class XMLReader implements Reader {
     public List<ExchangeRate> read() {
         List<ExchangeRate> exchangeRateList = new ArrayList<>();
 
-        try {
-            InputStream is = file.getInputStream();
+        try (InputStream is = file.getInputStream()) {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(is);
@@ -68,7 +68,8 @@ public class XMLReader implements Reader {
             }
 
         } catch (IOException | ParserConfigurationException | SAXException e) {
-            logger.error(e.toString());
+        	logger.error(e.getMessage());
+            throw new ApiException("XML processing error", e);
         }
 
         return exchangeRateList;

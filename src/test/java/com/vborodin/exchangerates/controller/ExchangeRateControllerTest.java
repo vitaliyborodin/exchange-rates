@@ -1,6 +1,7 @@
 package com.vborodin.exchangerates.controller;
 
 
+import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.repository.ExchangeRateRepository;
 import org.junit.Before;
@@ -12,8 +13,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
@@ -22,6 +25,7 @@ import java.util.List;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static io.github.benas.randombeans.api.EnhancedRandom.randomCollectionOf;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -79,7 +83,10 @@ public class ExchangeRateControllerTest {
                 .andExpect(jsonPath("$.length()", is(1)))
                 .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
                 .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
-
+    }
+    
+    @Test
+    public void exchangeRatesWithNonexistentCurrencyParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("currency", "NONEXISTENT"))
                 .andExpect(status().isOk())
@@ -94,7 +101,10 @@ public class ExchangeRateControllerTest {
                 .andExpect(jsonPath("$.length()", is(1)))
                 .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
                 .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
-
+    }
+    
+    @Test
+    public void exchangeRatesWithNonexistentBankParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("bank", "NONEXISTENT"))
                 .andExpect(status().isOk())
@@ -110,11 +120,96 @@ public class ExchangeRateControllerTest {
                 .andExpect(jsonPath("$.length()", is(1)))
                 .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
                 .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
-
+    }
+    
+    @Test
+    public void exchangeRatesWithNonexistentCurrencyParamAndNonexistentBankParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("currency", "NONEXISTENT")
                 .param("bank", "NONEXISTENT"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("[]"));
     }
+    
+    @Test
+    public void exchangeRatesWithNonexistentCurrencyParamAndBankParam() throws Exception {
+        this.mvc.perform(get("/api/v1/exchangerates")
+                .param("currency", "NONEXISTENT")
+                .param("bank", exchangeRate.getId().getBank()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
+    }
+    
+    @Test
+    public void exchangeRatesWithCurrencyParamAndNonexistentBankParam() throws Exception {
+        this.mvc.perform(get("/api/v1/exchangerates")
+                .param("currency", exchangeRate.getId().getCurrency())
+                .param("bank", "NONEXISTENT"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
+    }
+    
+    @Test
+    public void uploadXMLFile() throws Exception {
+        MockMultipartFile xmlFile = new MockMultipartFile("file", "test.xml", "application/xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rates/>".getBytes());
+
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+                .file(xmlFile))
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void uploadBadXMLFile() throws Exception {
+        MockMultipartFile badXmlFile = new MockMultipartFile("file", "test.xml", "application/xml", "<?xml".getBytes());
+
+        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(badXmlFile)))
+        .hasCause(new ApiException("XML processing error"));
+    }
+    
+    @Test
+    public void uploadJSONFile() throws Exception {
+        MockMultipartFile jsonFile = new MockMultipartFile("file", "test.json", "application/json", "[]".getBytes());
+
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+                .file(jsonFile))
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void uploadBadJSONFile() throws Exception {
+        MockMultipartFile badJsonFile = new MockMultipartFile("file", "test.json", "application/json", "[".getBytes());
+
+        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(badJsonFile)))
+        .hasCause(new ApiException("JSON processing error"));
+    }
+    
+    @Test
+    public void uploadCSVFile() throws Exception {
+        MockMultipartFile csvFile = new MockMultipartFile("file", "test.csv", "plain/text", "".getBytes());
+
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+                .file(csvFile))
+                .andExpect(status().isOk());
+    }
+    
+    @Test
+    public void uploadBadCSVFile() throws Exception {
+        MockMultipartFile badCsvFile = new MockMultipartFile("file", "test.csv", "plain/text", ",,,,,,,,,,,,,,,,,".getBytes());
+
+        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(badCsvFile)))
+        .hasCause(new ApiException("CSV processing error"));
+    }
+    
+    @Test
+    public void uploadUnsupportedFile() throws Exception {
+        MockMultipartFile unsupportedFile = new MockMultipartFile("file", "unsupported.unsupported", "text/unsupported", "".getBytes());
+
+        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(unsupportedFile)))
+        .hasCause(new ApiException("Unsupported file"));
+    }
+    
 }

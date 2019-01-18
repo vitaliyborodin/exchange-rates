@@ -3,6 +3,8 @@ package com.vborodin.exchangerates.util;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vborodin.exchangerates.exception.ApiException;
+
 public class ReaderFactory {
     private ReaderFactory() {
     }
@@ -17,7 +19,7 @@ public class ReaderFactory {
             reader = new CSVReader(file);
         } else if (extension.equalsIgnoreCase("JSON")) {
             reader = new JSONReader(file);
-        } else throw new RuntimeException("Unsupported file");
+        } else throw new ApiException("Unsupported file");
         return reader;
     }
 }

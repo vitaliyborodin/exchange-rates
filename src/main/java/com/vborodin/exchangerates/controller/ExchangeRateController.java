@@ -35,7 +35,7 @@ public class ExchangeRateController {
             return exchangeRateRepository.findByIdCurrencyIgnoreCase(currency);
         else if(currency == null && bank != null)
             return exchangeRateRepository.findByIdBankIgnoreCase(bank);
-        else if(currency != null && bank != null)
+        else if(currency != null)
             return exchangeRateRepository.findByIdBankIgnoreCaseAndIdCurrencyIgnoreCase(bank, currency);
         else
             return exchangeRateRepository.findAll();
@@ -145,7 +145,9 @@ public class ExchangeRateController {
     }
 
     private Sort createSortObject(String orderBy){
-        String orderField = "bank";
+    	if (orderBy == null) return null;
+    	
+    	String orderField = "bank";
         String orderType = "DESC";
 
         String[] parts = orderBy.split(",");

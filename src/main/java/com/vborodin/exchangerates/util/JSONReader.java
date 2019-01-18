@@ -1,9 +1,11 @@
 package com.vborodin.exchangerates.util;
 
+import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class JSONReader implements Reader {
-    private Logger logger = LoggerFactory.getLogger(JSONReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(JSONReader.class);
 
     private MultipartFile file;
 
@@ -31,9 +33,7 @@ public class JSONReader implements Reader {
     public List<ExchangeRate> read() {
         List<ExchangeRate> exchangeRateList = new ArrayList<>();
 
-        try {
-            InputStream is = file.getInputStream();
-
+        try (InputStream is = file.getInputStream()) {
             String input = new BufferedReader(new InputStreamReader(is)).lines()
                     .parallel().collect(Collectors.joining("\n"));
 
@@ -53,8 +53,9 @@ public class JSONReader implements Reader {
                 exchangeRateList.add(rateObj);
             }
 
-        } catch (IOException e) {
-            logger.error(e.toString());
+        } catch (IOException | JSONException e) {
+        	logger.error(e.getMessage());
+            throw new ApiException("JSON processing error", e);
         }
 
         return exchangeRateList;

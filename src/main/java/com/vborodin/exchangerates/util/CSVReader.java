@@ -1,5 +1,6 @@
 package com.vborodin.exchangerates.util;
 
+import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
@@ -9,15 +10,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CSVReader implements Reader {
-
-    private Logger logger = LoggerFactory.getLogger(CSVReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(CSVReader.class);
 
     private MultipartFile file;
 
@@ -27,13 +26,10 @@ public class CSVReader implements Reader {
 
     @Override
     public List<ExchangeRate> read() {
-        BufferedReader br;
         List<ExchangeRate> exchangeRateList = new ArrayList<>();
 
-        try {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             String line;
-            InputStream is = file.getInputStream();
-            br = new BufferedReader(new InputStreamReader(is));
 
             while ((line = br.readLine()) != null) {
                 String[] rateCsv = line.split(",");
@@ -47,8 +43,9 @@ public class CSVReader implements Reader {
                 exchangeRateList.add(rateObj);
             }
 
-        } catch (IOException e) {
+        } catch (IOException | IndexOutOfBoundsException e) {
             logger.error(e.toString());
+            throw new ApiException("CSV processing error", e);
         }
 
         return exchangeRateList;
