@@ -45,14 +45,14 @@ public class ExchangeRateController {
     public Iterable<ExchangeRate> buy(@PathVariable("currency") String currency,
                                       @RequestParam(value = "orderBy", required = false) String orderBy){
         Sort sort = createSortObject(orderBy);
-        return exchangeRateRepository.findByIdCurrencyAndBuyNotNull(currency, sort);
+        return exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(currency, sort);
     }
 
     @GetMapping(value = "/exchangerates/{currency}/sell")
     public Iterable<ExchangeRate> sell(@PathVariable("currency") String currency,
                                        @RequestParam(value = "orderBy", required = false) String orderBy){
         Sort sort = createSortObject(orderBy);
-        return exchangeRateRepository.findByIdCurrencyAndSellNotNull(currency, sort);
+        return exchangeRateRepository.findByIdCurrencyIgnoreCaseAndSellNotNull(currency, sort);
     }
 
     @DeleteMapping(value = "/exchangerates/{currency}/buy/{bank}")
@@ -71,7 +71,7 @@ public class ExchangeRateController {
     public ExchangeRate putBuyByCurrencyAndBank(@PathVariable("currency") String currency,
                          @PathVariable("bank") String bank,
                          @RequestBody String value){
-        ExchangeRate rate = exchangeRateRepository.findByIdCurrencyAndIdBank(currency, bank);
+        ExchangeRate rate = exchangeRateRepository.findByIdCurrencyIgnoreCaseAndIdBankIgnoreCase(currency, bank);
         rate.setBuy(new BigDecimal(value));
         return exchangeRateRepository.save(rate);
     }
@@ -80,7 +80,7 @@ public class ExchangeRateController {
     public ExchangeRate putSellByCurrencyAndBank(@PathVariable("currency") String currency,
                                            @PathVariable("bank") String bank,
                                            @RequestBody String value){
-        ExchangeRate rate = exchangeRateRepository.findByIdCurrencyAndIdBank(currency, bank);
+        ExchangeRate rate = exchangeRateRepository.findByIdCurrencyIgnoreCaseAndIdBankIgnoreCase(currency, bank);
         rate.setSell(new BigDecimal(value));
         return exchangeRateRepository.save(rate);
     }
@@ -97,12 +97,12 @@ public class ExchangeRateController {
 
     @GetMapping(value = "/exchangerates/{currency}/bestbuy")
     public ExchangeRate bestBuy(@PathVariable("currency") String currency){
-        return exchangeRateRepository.findTopByIdCurrencyOrderByBuyDesc(currency);
+        return exchangeRateRepository.findTopByIdCurrencyIgnoreCaseOrderByBuyDesc(currency);
     }
 
     @GetMapping(value = "/exchangerates/{currency}/bestsell")
     public ExchangeRate bestSell(@PathVariable("currency") String currency){
-        return exchangeRateRepository.findTopByIdCurrencyAndSellNotNullOrderBySellAsc(currency);
+        return exchangeRateRepository.findTopByIdCurrencyIgnoreCaseAndSellNotNullOrderBySellAsc(currency);
     }
 
     @GetMapping(value = "/exchangerates/report")
@@ -120,10 +120,10 @@ public class ExchangeRateController {
         for (String c : currencies) {
             BestRate item = new BestRate();
             item.setCurrency(c);
-            ExchangeRate bestBuyRate = exchangeRateRepository.findTopByIdCurrencyOrderByBuyDesc(c);
+            ExchangeRate bestBuyRate = exchangeRateRepository.findTopByIdCurrencyIgnoreCaseOrderByBuyDesc(c);
             item.setBuyRate(bestBuyRate.getBuy());
             item.setBuyBank(bestBuyRate.getId().getBank());
-            ExchangeRate bestSellRate = exchangeRateRepository.findTopByIdCurrencyAndSellNotNullOrderBySellAsc(c);
+            ExchangeRate bestSellRate = exchangeRateRepository.findTopByIdCurrencyIgnoreCaseAndSellNotNullOrderBySellAsc(c);
             item.setSellRate(bestSellRate.getSell());
             item.setSellBank(bestSellRate.getId().getBank());
 
@@ -135,12 +135,9 @@ public class ExchangeRateController {
 
     @PostMapping(value = "/upload")
     public Iterable<ExchangeRate> handleFileUpload(@RequestParam("file") MultipartFile file) {
-
-        List<ExchangeRate> exchangeRates = ReaderFactory.getReader(file).read();
-        for (ExchangeRate er : exchangeRates){
-            exchangeRateRepository.save(er);
-        }
-
+        ReaderFactory.getReader(file).read().stream()
+        	.forEach(exchangeRateRepository::save);
+        
         return exchangeRateRepository.findByIdBankIgnoreCase(FilenameUtils.getBaseName(file.getOriginalFilename()));
     }
 
@@ -156,5 +153,6 @@ public class ExchangeRateController {
 
         return Sort.by(new Sort.Order(Sort.Direction.valueOf(orderType), orderField));
     }
+    
 
 }

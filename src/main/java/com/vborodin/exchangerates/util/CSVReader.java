@@ -6,6 +6,7 @@ import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -45,7 +46,7 @@ public class CSVReader implements Reader {
 
         } catch (IOException | IndexOutOfBoundsException e) {
             logger.error(e.toString());
-            throw new ApiException("CSV processing error", e);
+            throw new ApiException("CSV processing error", HttpStatus.BAD_REQUEST);
         }
 
         return exchangeRateList;

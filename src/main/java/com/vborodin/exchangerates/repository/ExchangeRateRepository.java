@@ -13,11 +13,11 @@ public interface ExchangeRateRepository extends PagingAndSortingRepository<Excha
     Iterable<ExchangeRate> findByIdBankIgnoreCase(String bank);
     Iterable<ExchangeRate> findByIdCurrencyIgnoreCase(String currency);
     Iterable<ExchangeRate> findByIdBankIgnoreCaseAndIdCurrencyIgnoreCase(String bank, String currency);
-    ExchangeRate findTopByIdCurrencyOrderByBuyDesc(String currency);
-    ExchangeRate findTopByIdCurrencyAndSellNotNullOrderBySellAsc(String currency);
-    Iterable<ExchangeRate> findByIdCurrencyAndBuyNotNull(String currency, Sort sort);
-    Iterable<ExchangeRate> findByIdCurrencyAndSellNotNull(String currency, Sort sort);
-    ExchangeRate findByIdCurrencyAndIdBank(String currency, String bank);
+    ExchangeRate findTopByIdCurrencyIgnoreCaseOrderByBuyDesc(String currency);
+    ExchangeRate findTopByIdCurrencyIgnoreCaseAndSellNotNullOrderBySellAsc(String currency);
+    Iterable<ExchangeRate> findByIdCurrencyIgnoreCaseAndBuyNotNull(String currency, Sort sort);
+    Iterable<ExchangeRate> findByIdCurrencyIgnoreCaseAndSellNotNull(String currency, Sort sort);
+    ExchangeRate findByIdCurrencyIgnoreCaseAndIdBankIgnoreCase(String currency, String bank);
 
     @Transactional
     @Modifying

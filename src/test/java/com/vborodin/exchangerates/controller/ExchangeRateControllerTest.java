@@ -2,6 +2,7 @@ package com.vborodin.exchangerates.controller;
 
 
 import com.vborodin.exchangerates.exception.ApiException;
+import com.vborodin.exchangerates.exception.ExchangeRateControllerAdvice;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.repository.ExchangeRateRepository;
 import org.junit.Before;
@@ -27,8 +28,10 @@ import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static io.github.benas.randombeans.api.EnhancedRandom.randomCollectionOf;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -52,7 +55,7 @@ public class ExchangeRateControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.mvc = MockMvcBuilders.standaloneSetup(exchangeRateController).build();
+        this.mvc = MockMvcBuilders.standaloneSetup(exchangeRateController).setControllerAdvice(new ExchangeRateControllerAdvice()).build();
 
         exchangeRate = random(ExchangeRate.class);
         exchangeRates.add(exchangeRate);
@@ -66,6 +69,13 @@ public class ExchangeRateControllerTest {
                 .thenReturn(Collections.singletonList((exchangeRate)));
         when(exchangeRateRepository.findAll())
                 .thenReturn(exchangeRates);
+        
+        when(exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(exchangeRate.getId().getCurrency(), null))
+        		.thenReturn(Collections.singletonList((exchangeRate)));
+        when(exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(exchangeRate.getId().getCurrency().toLowerCase(), null))
+			.thenReturn(Collections.singletonList((exchangeRate)));
+        when(exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(exchangeRate.getId().getCurrency().toUpperCase(), null))
+			.thenReturn(Collections.singletonList((exchangeRate)));
     }
 
     @Test
@@ -150,6 +160,27 @@ public class ExchangeRateControllerTest {
     }
     
     @Test
+    public void exchangeRatesByCurrencyIgnoreCaseForBuy() throws Exception {
+        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()", is(1)))
+        .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
+        .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+    	
+        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency().toLowerCase()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()", is(1)))
+        .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
+        .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+        
+        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency().toUpperCase()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()", is(1)))
+        .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
+        .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+    }
+    
+    @Test
     public void uploadXMLFile() throws Exception {
         MockMultipartFile xmlFile = new MockMultipartFile("file", "test.xml", "application/xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><rates/>".getBytes());
 
@@ -157,14 +188,15 @@ public class ExchangeRateControllerTest {
                 .file(xmlFile))
                 .andExpect(status().isOk());
     }
-    
+        
     @Test
     public void uploadBadXMLFile() throws Exception {
         MockMultipartFile badXmlFile = new MockMultipartFile("file", "test.xml", "application/xml", "<?xml".getBytes());
-
-        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
-        		.file(badXmlFile)))
-        .hasCause(new ApiException("XML processing error"));
+        
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(badXmlFile))
+        		.andExpect(status().isBadRequest())
+        		.andExpect(jsonPath("$.message", is("XML processing error")));
     }
     
     @Test
@@ -179,10 +211,11 @@ public class ExchangeRateControllerTest {
     @Test
     public void uploadBadJSONFile() throws Exception {
         MockMultipartFile badJsonFile = new MockMultipartFile("file", "test.json", "application/json", "[".getBytes());
-
-        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
-        		.file(badJsonFile)))
-        .hasCause(new ApiException("JSON processing error"));
+                
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(badJsonFile))
+        		.andExpect(status().isBadRequest())
+        		.andExpect(jsonPath("$.message", is("JSON processing error")));
     }
     
     @Test
@@ -198,18 +231,20 @@ public class ExchangeRateControllerTest {
     public void uploadBadCSVFile() throws Exception {
         MockMultipartFile badCsvFile = new MockMultipartFile("file", "test.csv", "plain/text", ",,,,,,,,,,,,,,,,,".getBytes());
 
-        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
-        		.file(badCsvFile)))
-        .hasCause(new ApiException("CSV processing error"));
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(badCsvFile))
+        		.andExpect(status().isBadRequest())
+        		.andExpect(jsonPath("$.message", is("CSV processing error")));
     }
     
     @Test
     public void uploadUnsupportedFile() throws Exception {
         MockMultipartFile unsupportedFile = new MockMultipartFile("file", "unsupported.unsupported", "text/unsupported", "".getBytes());
-
-        assertThatThrownBy(() -> this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
-        		.file(unsupportedFile)))
-        .hasCause(new ApiException("Unsupported file"));
+        
+        this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
+        		.file(unsupportedFile))
+        		.andExpect(status().isBadRequest())
+        		.andExpect(jsonPath("$.message", is("Unsupported file")));
     }
     
 }

@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -55,7 +56,7 @@ public class JSONReader implements Reader {
 
         } catch (IOException | JSONException e) {
         	logger.error(e.getMessage());
-            throw new ApiException("JSON processing error", e);
+            throw new ApiException("JSON processing error", HttpStatus.BAD_REQUEST);
         }
 
         return exchangeRateList;
