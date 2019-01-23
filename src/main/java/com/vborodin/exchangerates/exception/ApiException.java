@@ -6,10 +6,11 @@ public class ApiException extends RuntimeException {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private HttpStatus status;
+	private final HttpStatus status;
 
 	public ApiException(String message) {
-		super(message);	
+		super(message);
+		this.status = HttpStatus.INTERNAL_SERVER_ERROR;
 	}
 	
 	public ApiException(String message, HttpStatus status) {
@@ -19,6 +20,7 @@ public class ApiException extends RuntimeException {
 	
 	public ApiException(String message, Throwable cause) {
 		super(message, cause);
+		this.status = HttpStatus.INTERNAL_SERVER_ERROR;
 	}
 
 	public HttpStatus getStatus() {

@@ -7,6 +7,7 @@ import com.vborodin.exchangerates.util.ReaderFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 
 
-@RequestMapping("api/v1")
+@RequestMapping(value = "api/v1", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @RestController
 public class ExchangeRateController {
 
@@ -133,9 +134,9 @@ public class ExchangeRateController {
         return result;
     }
 
-    @PostMapping(value = "/upload")
+    @PostMapping(value = "/upload", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Iterable<ExchangeRate> handleFileUpload(@RequestParam("file") MultipartFile file) {
-        ReaderFactory.getReader(file).read().stream()
+        ReaderFactory.getReader(file).read()
         	.forEach(exchangeRateRepository::save);
         
         return exchangeRateRepository.findByIdBankIgnoreCase(FilenameUtils.getBaseName(file.getOriginalFilename()));

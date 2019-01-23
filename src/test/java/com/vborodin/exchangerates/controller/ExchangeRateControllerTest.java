@@ -1,7 +1,6 @@
 package com.vborodin.exchangerates.controller;
 
 
-import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.exception.ExchangeRateControllerAdvice;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.repository.ExchangeRateRepository;
@@ -26,12 +25,9 @@ import java.util.List;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static io.github.benas.randombeans.api.EnhancedRandom.randomCollectionOf;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -220,7 +216,7 @@ public class ExchangeRateControllerTest {
     
     @Test
     public void uploadCSVFile() throws Exception {
-        MockMultipartFile csvFile = new MockMultipartFile("file", "test.csv", "plain/text", "".getBytes());
+        MockMultipartFile csvFile = new MockMultipartFile("file", "test.csv", "plain/text", "Currency,Buy,Sell".getBytes());
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
                 .file(csvFile))
@@ -229,7 +225,7 @@ public class ExchangeRateControllerTest {
     
     @Test
     public void uploadBadCSVFile() throws Exception {
-        MockMultipartFile badCsvFile = new MockMultipartFile("file", "test.csv", "plain/text", ",,,,,,,,,,,,,,,,,".getBytes());
+        MockMultipartFile badCsvFile = new MockMultipartFile("file", "test.csv", "plain/text", ",\n\n,\n,\n,,\t,,,\n,,,,\n/\n///|,,,,,".getBytes());
 
         this.mvc.perform(MockMvcRequestBuilders.multipart("/api/v1/upload")
         		.file(badCsvFile))

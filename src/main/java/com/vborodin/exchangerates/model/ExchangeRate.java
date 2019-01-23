@@ -1,13 +1,17 @@
 package com.vborodin.exchangerates.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
+@JsonPropertyOrder({"id", "buy", "sell"})
 public class ExchangeRate implements Serializable {
 
     @EmbeddedId
@@ -27,6 +31,13 @@ public class ExchangeRate implements Serializable {
 
     public ExchangeRate(ExchangeRateId id, BigDecimal buy, BigDecimal sell) {
         this.id = id;
+        this.buy = buy;
+        this.sell = sell;
+    }
+
+    public ExchangeRate(String currency, BigDecimal buy, BigDecimal sell) {
+        this.id = new ExchangeRateId();
+        this.id.setCurrency(currency);
         this.buy = buy;
         this.sell = sell;
     }

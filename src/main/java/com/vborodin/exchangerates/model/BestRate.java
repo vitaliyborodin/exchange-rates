@@ -1,10 +1,10 @@
 package com.vborodin.exchangerates.model;
 
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class BestRate implements Serializable {
-
     private String currency;
     private BigDecimal buyRate;
     private String buyBank;
