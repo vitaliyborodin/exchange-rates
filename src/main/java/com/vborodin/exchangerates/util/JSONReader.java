@@ -8,28 +8,34 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
+@Component
 public class JSONReader implements Reader {
     private static final Logger logger = LoggerFactory.getLogger(JSONReader.class);
 
-    private MultipartFile file;
+    private static final String FILE_TYPE = "JSON";
 
-    JSONReader(MultipartFile file) {
-        this.file = file;
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    @Override
+    public String getFileType() {
+        return FILE_TYPE;
     }
 
     @Override
-    public List<ExchangeRate> read() {
+    public List<ExchangeRate> read(MultipartFile file) {
         List<ExchangeRate> exchangeRateList;
         try {
-            exchangeRateList = new ObjectMapper().readValue(file.getInputStream(), new TypeReference<List<ExchangeRate>>(){});
+            exchangeRateList = mapper.readValue(file.getInputStream(), new TypeReference<List<ExchangeRate>>() {
+            });
             exchangeRateList.forEach(exchangeRate -> exchangeRate.getId().setBank(FilenameUtils.getBaseName(file.getOriginalFilename())));
         } catch (IOException e) {
-        	logger.error(e.getMessage());
+            logger.error(e.getMessage());
             throw new ApiException("JSON processing error", HttpStatus.BAD_REQUEST);
         }
         return exchangeRateList;

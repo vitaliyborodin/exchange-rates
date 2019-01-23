@@ -10,30 +10,34 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class CSVReader implements Reader {
     private static final Logger logger = LoggerFactory.getLogger(CSVReader.class);
 
-    private MultipartFile file;
+    private static final String FILE_TYPE = "CSV";
 
-    CSVReader(MultipartFile file) {
-        this.file = file;
+    private static final CsvMapper csvMapper = new CsvMapper();
+
+    @Override
+    public String getFileType() {
+        return FILE_TYPE;
     }
 
     @Override
-    public List<ExchangeRate> read() {
+    public List<ExchangeRate> read(MultipartFile file) {
         List<ExchangeRate> exchangeRateList = new ArrayList<>();
 
         try {
-            CsvMapper csvMapper = new CsvMapper();
             csvMapper.enable(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE);
             csvMapper.enable(CsvParser.Feature.INSERT_NULLS_FOR_MISSING_COLUMNS);
-            CsvSchema csvSchema = csvMapper.schemaFor(ExchangeRate.class).withHeader().sortedBy("currency","buy","sell");
+            CsvSchema csvSchema = csvMapper.schemaFor(ExchangeRate.class).withHeader().sortedBy("currency", "buy", "sell");
 
             MappingIterator<ExchangeRate> iterator = csvMapper.readerFor(ExchangeRate.class).with(csvSchema).readValues(file.getInputStream());
             while (iterator.hasNext()) {

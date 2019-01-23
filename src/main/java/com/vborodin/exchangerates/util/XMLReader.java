@@ -8,26 +8,30 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class XMLReader implements Reader {
     private static final Logger logger = LoggerFactory.getLogger(XMLReader.class);
 
-    private MultipartFile file;
+    private static final String FILE_TYPE = "XML";
 
-    XMLReader(MultipartFile file) {
-        this.file = file;
+    private static final XmlMapper xmlMapper = new XmlMapper();
+
+    @Override
+    public String getFileType() {
+        return FILE_TYPE;
     }
 
     @Override
-    public List<ExchangeRate> read() {
+    public List<ExchangeRate> read(MultipartFile file) {
         List<ExchangeRate> exchangeRateList;
         try {
-            XmlMapper xmlMapper = new XmlMapper();
             Rates rates = xmlMapper.readValue(file.getInputStream(), Rates.class);
             exchangeRateList = rates.getRates().stream()
                     .peek(exchangeRate -> exchangeRate.getId().setBank(FilenameUtils.getBaseName(file.getOriginalFilename())))

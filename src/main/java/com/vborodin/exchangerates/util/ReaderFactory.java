@@ -1,26 +1,40 @@
 package com.vborodin.exchangerates.util;
 
+import com.vborodin.exchangerates.exception.ApiException;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.vborodin.exchangerates.exception.ApiException;
+import javax.annotation.PostConstruct;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Component
 public class ReaderFactory {
-    private ReaderFactory() {
+    private static final Logger logger = LoggerFactory.getLogger(ReaderFactory.class);
+    private Map<String, Reader> readers;
+
+    @Autowired(required = false)
+    private ReaderFactory(Map<String, Reader> readers) {
+        this.readers = readers.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getValue().getFileType().toUpperCase(),
+                        Map.Entry::getValue
+                ));
     }
 
-    public static Reader getReader(MultipartFile file) {
-        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+    @PostConstruct
+    public void init() {
+        logger.info("Injected readers: {}", readers.keySet());
+    }
 
-        Reader reader;
-        if (extension.equalsIgnoreCase("XML")) {
-            reader = new XMLReader(file);
-        } else if (extension.equalsIgnoreCase("CSV")) {
-            reader = new CSVReader(file);
-        } else if (extension.equalsIgnoreCase("JSON")) {
-            reader = new JSONReader(file);
-        } else throw new ApiException("Unsupported file", HttpStatus.BAD_REQUEST);
-        return reader;
+    public Reader getReader(MultipartFile file) {
+         return Optional.ofNullable(readers.get(FilenameUtils.getExtension(file.getOriginalFilename()).toUpperCase()))
+                 .orElseThrow(() -> new ApiException("Unsupported file", HttpStatus.BAD_REQUEST));
     }
 }

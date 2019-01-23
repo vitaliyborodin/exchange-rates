@@ -1,77 +1,64 @@
 package com.vborodin.exchangerates.controller;
 
 
-import com.vborodin.exchangerates.exception.ExchangeRateControllerAdvice;
+import com.vborodin.exchangerates.ExchangeRatesApplication;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.repository.ExchangeRateRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.random;
 import static io.github.benas.randombeans.api.EnhancedRandom.randomCollectionOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
+@ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@ContextConfiguration(classes = {ExchangeRatesApplication.class})
 public class ExchangeRateControllerTest {
 
-    @Mock
-    private ExchangeRateRepository exchangeRateRepository;
+    @Autowired
+    private WebApplicationContext wac;
 
-    @InjectMocks
-    private ExchangeRateController exchangeRateController;
+    @Autowired
+    private ExchangeRateRepository exchangeRateRepository;
 
     @Autowired
     private MockMvc mvc;
 
     private ExchangeRate exchangeRate;
-    private List<ExchangeRate> exchangeRates = new ArrayList<>();
+    private static List<ExchangeRate> exchangeRates = new ArrayList<>();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        this.mvc = MockMvcBuilders.standaloneSetup(exchangeRateController).setControllerAdvice(new ExchangeRateControllerAdvice()).build();
+        this.mvc = MockMvcBuilders
+                .webAppContextSetup(this.wac)
+                .build();
 
         exchangeRate = random(ExchangeRate.class);
         exchangeRates.add(exchangeRate);
         exchangeRates.addAll(randomCollectionOf(10, ExchangeRate.class));
-
-        when(exchangeRateRepository.findByIdCurrencyIgnoreCase(exchangeRate.getId().getCurrency()))
-                .thenReturn(Collections.singletonList((exchangeRate)));
-        when(exchangeRateRepository.findByIdBankIgnoreCase(exchangeRate.getId().getBank()))
-                .thenReturn(Collections.singletonList((exchangeRate)));
-        when(exchangeRateRepository.findByIdBankIgnoreCaseAndIdCurrencyIgnoreCase(exchangeRate.getId().getBank(), exchangeRate.getId().getCurrency()))
-                .thenReturn(Collections.singletonList((exchangeRate)));
-        when(exchangeRateRepository.findAll())
-                .thenReturn(exchangeRates);
-        
-        when(exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(exchangeRate.getId().getCurrency(), null))
-        		.thenReturn(Collections.singletonList((exchangeRate)));
-        when(exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(exchangeRate.getId().getCurrency().toLowerCase(), null))
-			.thenReturn(Collections.singletonList((exchangeRate)));
-        when(exchangeRateRepository.findByIdCurrencyIgnoreCaseAndBuyNotNull(exchangeRate.getId().getCurrency().toUpperCase(), null))
-			.thenReturn(Collections.singletonList((exchangeRate)));
+        exchangeRates.forEach(exchangeRateRepository::save);
     }
 
     @Test

@@ -22,10 +22,12 @@ import java.util.List;
 public class ExchangeRateController {
 
     private ExchangeRateRepository exchangeRateRepository;
+    private ReaderFactory readerFactory;
 
     @Autowired
-    public ExchangeRateController(ExchangeRateRepository exchangeRateRepository) {
+    public ExchangeRateController(ExchangeRateRepository exchangeRateRepository, ReaderFactory readerFactory) {
         this.exchangeRateRepository = exchangeRateRepository;
+        this.readerFactory = readerFactory;
     }
 
     @GetMapping(value = "/exchangerates")
@@ -136,7 +138,7 @@ public class ExchangeRateController {
 
     @PostMapping(value = "/upload", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Iterable<ExchangeRate> handleFileUpload(@RequestParam("file") MultipartFile file) {
-        ReaderFactory.getReader(file).read()
+        readerFactory.getReader(file).read(file)
         	.forEach(exchangeRateRepository::save);
         
         return exchangeRateRepository.findByIdBankIgnoreCase(FilenameUtils.getBaseName(file.getOriginalFilename()));
