@@ -2,7 +2,7 @@ package com.vborodin.exchangerates.model;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import javax.persistence.Embeddable;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -13,31 +13,34 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ExchangeRateId implements Serializable {
     @XmlElement
-    private String currency;
-    @XmlElement
-    private String bank;
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
 
-    public ExchangeRateId() {
+    @XmlElement
+    @ManyToOne(cascade = CascadeType.ALL, targetEntity = Bank.class)
+    private Bank bank;
+
+    ExchangeRateId() {
     }
 
-    public ExchangeRateId(String currency, String bank) {
+    public ExchangeRateId(Currency currency, Bank bank) {
         this.currency = currency;
         this.bank = bank;
     }
 
-    public String getCurrency() {
+    public Currency getCurrency() {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    public void setCurrency(Currency currency) {
         this.currency = currency;
     }
 
-    public String getBank() {
+    public Bank getBank() {
         return bank;
     }
 
-    public void setBank(String bank) {
+    public void setBank(Bank bank) {
         this.bank = bank;
     }
 }

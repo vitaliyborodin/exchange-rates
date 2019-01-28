@@ -6,9 +6,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.model.ExchangeRate;
+import com.vborodin.exchangerates.repository.BankRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,9 @@ public class CSVReader implements Reader {
     private static final String FILE_TYPE = "CSV";
 
     private static final CsvMapper csvMapper = new CsvMapper();
+
+    @Autowired
+    private BankRepository bankRepository;
 
     @Override
     public String getFileType() {
@@ -46,7 +51,7 @@ public class CSVReader implements Reader {
                         || (rate.getBuy() == null && rate.getSell() == null)) {
                     throw new ApiException("CSV processing error", HttpStatus.BAD_REQUEST);
                 } else {
-                    rate.getId().setBank(FilenameUtils.getBaseName(file.getOriginalFilename()));
+                    rate.getId().setBank(bankRepository.findByName(FilenameUtils.getBaseName(file.getOriginalFilename())));
                     exchangeRateList.add(rate);
                 }
             }

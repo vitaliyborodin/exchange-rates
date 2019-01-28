@@ -1,5 +1,6 @@
 package com.vborodin.exchangerates.repository;
 
+import com.vborodin.exchangerates.model.Currency;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.ExchangeRateId;
 import org.springframework.data.domain.Sort;
@@ -8,26 +9,27 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public interface ExchangeRateRepository extends PagingAndSortingRepository<ExchangeRate, ExchangeRateId> {
 
-    Iterable<ExchangeRate> findByIdBankIgnoreCase(String bank);
-    Iterable<ExchangeRate> findByIdCurrencyIgnoreCase(String currency);
-    Iterable<ExchangeRate> findByIdBankIgnoreCaseAndIdCurrencyIgnoreCase(String bank, String currency);
-    ExchangeRate findTopByIdCurrencyIgnoreCaseOrderByBuyDesc(String currency);
-    ExchangeRate findTopByIdCurrencyIgnoreCaseAndSellNotNullOrderBySellAsc(String currency);
-    Iterable<ExchangeRate> findByIdCurrencyIgnoreCaseAndBuyNotNull(String currency, Sort sort);
-    Iterable<ExchangeRate> findByIdCurrencyIgnoreCaseAndSellNotNull(String currency, Sort sort);
-    ExchangeRate findByIdCurrencyIgnoreCaseAndIdBankIgnoreCase(String currency, String bank);
+    Iterable<ExchangeRate> findByIdBankNameIgnoreCase(String bank);
+    Iterable<ExchangeRate> findByIdCurrency(Currency currency);
+    Iterable<ExchangeRate> findByIdBankNameIgnoreCaseAndIdCurrency(String bank, Currency currency);
+    ExchangeRate findTopByIdCurrencyOrderByBuyDesc(Currency currency);
+    ExchangeRate findTopByIdCurrencyAndSellNotNullOrderBySellAsc(Currency currency);
+    Iterable<ExchangeRate> findByIdCurrencyAndBuyNotNull(Currency currency, Sort sort);
+    Iterable<ExchangeRate> findByIdCurrencyAndSellNotNull(Currency currency, Sort sort);
+    ExchangeRate findByIdCurrencyAndIdBankNameIgnoreCase(Currency currency, String bank);
 
     @Transactional
     @Modifying
     @Query("update ExchangeRate o set o.sell = null where o.id.currency =?1 and o.id.bank = ?2")
-    int resetSellByCurrencyAndBank(String currency, String bank);
+    int resetSellByCurrencyAndBank(Currency currency, String bank);
 
     @Transactional
     @Modifying
     @Query("update ExchangeRate o set o.sell = null where o.id.currency =?1 and o.id.bank = ?2")
-    int resetBuyByCurrencyAndBank(String currency, String bank);
+    int resetBuyByCurrencyAndBank(Currency currency, String bank);
 
     @Transactional
     @Modifying

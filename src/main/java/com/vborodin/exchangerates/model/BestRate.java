@@ -5,16 +5,16 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class BestRate implements Serializable {
-    private String currency;
+    private Currency currency;
     private BigDecimal buyRate;
-    private String buyBank;
+    private Bank buyBank;
     private BigDecimal sellRate;
-    private String sellBank;
+    private Bank sellBank;
 
     public BestRate() {
     }
 
-    public BestRate(String currency, BigDecimal buyRate, String buyBank, BigDecimal sellRate, String sellBank) {
+    public BestRate(Currency currency, BigDecimal buyRate, Bank buyBank, BigDecimal sellRate, Bank sellBank) {
         this.currency = currency;
         this.buyRate = buyRate;
         this.buyBank = buyBank;
@@ -22,11 +22,11 @@ public class BestRate implements Serializable {
         this.sellBank = sellBank;
     }
 
-    public String getCurrency() {
+    public Currency getCurrency() {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    public void setCurrency(Currency currency) {
         this.currency = currency;
     }
 
@@ -38,11 +38,11 @@ public class BestRate implements Serializable {
         this.buyRate = buyRate;
     }
 
-    public String getBuyBank() {
+    public Bank getBuyBank() {
         return buyBank;
     }
 
-    public void setBuyBank(String buyBank) {
+    public void setBuyBank(Bank buyBank) {
         this.buyBank = buyBank;
     }
 
@@ -54,11 +54,11 @@ public class BestRate implements Serializable {
         this.sellRate = sellRate;
     }
 
-    public String getSellBank() {
+    public Bank getSellBank() {
         return sellBank;
     }
 
-    public void setSellBank(String sellBank) {
+    public void setSellBank(Bank sellBank) {
         this.sellBank = sellBank;
     }
 }

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.vborodin.exchangerates.exception.ApiException;
 import com.vborodin.exchangerates.model.ExchangeRate;
 import com.vborodin.exchangerates.model.Rates;
+import com.vborodin.exchangerates.repository.BankRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +25,9 @@ public class XMLReader implements Reader {
 
     private static final XmlMapper xmlMapper = new XmlMapper();
 
+    @Autowired
+    private BankRepository bankRepository;
+
     @Override
     public String getFileType() {
         return FILE_TYPE;
@@ -34,7 +39,7 @@ public class XMLReader implements Reader {
         try {
             Rates rates = xmlMapper.readValue(file.getInputStream(), Rates.class);
             exchangeRateList = rates.getRates().stream()
-                    .peek(exchangeRate -> exchangeRate.getId().setBank(FilenameUtils.getBaseName(file.getOriginalFilename())))
+                    .peek(exchangeRate -> exchangeRate.getId().setBank(bankRepository.findByName(FilenameUtils.getBaseName(file.getOriginalFilename()))))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             logger.error(e.getMessage());

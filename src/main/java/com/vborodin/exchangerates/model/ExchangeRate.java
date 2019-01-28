@@ -35,7 +35,7 @@ public class ExchangeRate implements Serializable {
         this.sell = sell;
     }
 
-    public ExchangeRate(String currency, BigDecimal buy, BigDecimal sell) {
+    public ExchangeRate(Currency currency, BigDecimal buy, BigDecimal sell) {
         this.id = new ExchangeRateId();
         this.id.setCurrency(currency);
         this.buy = buy;

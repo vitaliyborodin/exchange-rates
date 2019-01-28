@@ -3,7 +3,11 @@ package com.vborodin.exchangerates.controller;
 
 import com.vborodin.exchangerates.ExchangeRatesApplication;
 import com.vborodin.exchangerates.model.ExchangeRate;
+import com.vborodin.exchangerates.repository.BankRepository;
 import com.vborodin.exchangerates.repository.ExchangeRateRepository;
+import io.github.benas.randombeans.EnhancedRandomBuilder;
+import io.github.benas.randombeans.api.EnhancedRandom;
+import io.github.benas.randombeans.randomizers.range.LongRangeRandomizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,9 +26,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static io.github.benas.randombeans.api.EnhancedRandom.random;
-import static io.github.benas.randombeans.api.EnhancedRandom.randomCollectionOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -40,12 +43,15 @@ public class ExchangeRateControllerTest {
     private WebApplicationContext wac;
 
     @Autowired
+    private BankRepository bankRepository;
+
+    @Autowired
     private ExchangeRateRepository exchangeRateRepository;
 
     @Autowired
     private MockMvc mvc;
 
-    private ExchangeRate exchangeRate;
+    private static ExchangeRate exchangeRate;
     private static List<ExchangeRate> exchangeRates = new ArrayList<>();
 
     @Before
@@ -55,10 +61,20 @@ public class ExchangeRateControllerTest {
                 .webAppContextSetup(this.wac)
                 .build();
 
-        exchangeRate = random(ExchangeRate.class);
-        exchangeRates.add(exchangeRate);
-        exchangeRates.addAll(randomCollectionOf(10, ExchangeRate.class));
-        exchangeRates.forEach(exchangeRateRepository::save);
+        if (exchangeRate == null) {
+            EnhancedRandom enhancedRandom = EnhancedRandomBuilder.aNewEnhancedRandomBuilder()
+                    .randomize(Long.class, new LongRangeRandomizer(0L, 100L))
+                    .build();
+
+            exchangeRate = enhancedRandom.nextObject(ExchangeRate.class);
+            exchangeRates.add(exchangeRate);
+            exchangeRates.addAll(enhancedRandom.objects(ExchangeRate.class, 10).collect(Collectors.toList()));
+
+            exchangeRates.forEach(rate -> {
+                rate.getId().setBank(bankRepository.save(rate.getId().getBank()));
+                exchangeRateRepository.save(rate);
+            });
+        }
     }
 
     @Test
@@ -70,12 +86,16 @@ public class ExchangeRateControllerTest {
 
     @Test
     public void exchangeRatesWithCurrencyParam() throws Exception {
+        int count = exchangeRates.stream()
+                .filter(rate -> rate.getId().getCurrency().equals(exchangeRate.getId().getCurrency()))
+                .collect(Collectors.toList()).size();
+
         this.mvc.perform(get("/api/v1/exchangerates")
-                .param("currency", exchangeRate.getId().getCurrency()))
+                .param("currency", exchangeRate.getId().getCurrency().name()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()", is(1)))
-                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
-                .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+                .andExpect(jsonPath("$.length()", is(count)))
+                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency().name())))
+                .andExpect(jsonPath("$.[0].bank.id", is(exchangeRate.getId().getBank().getId().intValue())));
     }
     
     @Test
@@ -88,12 +108,16 @@ public class ExchangeRateControllerTest {
 
     @Test
     public void exchangeRatesWithBankParam() throws Exception {
+        int count = exchangeRates.stream()
+                .filter(rate -> rate.getId().getBank().equals(exchangeRate.getId().getBank()))
+                .collect(Collectors.toList()).size();
+
         this.mvc.perform(get("/api/v1/exchangerates")
-                .param("bank", exchangeRate.getId().getBank()))
+                .param("bank", exchangeRate.getId().getBank().getName()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(1)))
-                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
-                .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency().name())))
+                .andExpect(jsonPath("$.[0].bank.id", is(exchangeRate.getId().getBank().getId().intValue())));
     }
     
     @Test
@@ -107,12 +131,12 @@ public class ExchangeRateControllerTest {
     @Test
     public void exchangeRatesWithCurrencyParamAndBankParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
-                .param("bank", exchangeRate.getId().getBank())
-                .param("currency", exchangeRate.getId().getCurrency()))
+                .param("bank", exchangeRate.getId().getBank().getName())
+                .param("currency", exchangeRate.getId().getCurrency().name()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(1)))
-                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
-                .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency().name())))
+                .andExpect(jsonPath("$.[0].bank.id", is(exchangeRate.getId().getBank().getId().intValue())));
     }
     
     @Test
@@ -128,7 +152,7 @@ public class ExchangeRateControllerTest {
     public void exchangeRatesWithNonexistentCurrencyParamAndBankParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("currency", "NONEXISTENT")
-                .param("bank", exchangeRate.getId().getBank()))
+                .param("bank", exchangeRate.getId().getBank().getName()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("[]"));
     }
@@ -136,7 +160,7 @@ public class ExchangeRateControllerTest {
     @Test
     public void exchangeRatesWithCurrencyParamAndNonexistentBankParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
-                .param("currency", exchangeRate.getId().getCurrency())
+                .param("currency", exchangeRate.getId().getCurrency().name())
                 .param("bank", "NONEXISTENT"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("[]"));
@@ -144,23 +168,27 @@ public class ExchangeRateControllerTest {
     
     @Test
     public void exchangeRatesByCurrencyIgnoreCaseForBuy() throws Exception {
+        int count = exchangeRates.stream()
+                .filter(rate -> rate.getId().getCurrency().equals(exchangeRate.getId().getCurrency()))
+                .collect(Collectors.toList()).size();
+
         this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()", is(1)))
-        .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
-        .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(count)))
+                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency().name())))
+                .andExpect(jsonPath("$.[0].bank.id", is(exchangeRate.getId().getBank().getId().intValue())));
     	
-        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency().toLowerCase()))
+        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency().name().toLowerCase()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()", is(1)))
-        .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
-        .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+                .andExpect(jsonPath("$.length()", is(count)))
+                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency().name())))
+                .andExpect(jsonPath("$.[0].bank.id", is(exchangeRate.getId().getBank().getId().intValue())));
         
-        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency().toUpperCase()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()", is(1)))
-        .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency())))
-        .andExpect(jsonPath("$.[0].bank", is(exchangeRate.getId().getBank())));
+        this.mvc.perform(get("/api/v1/exchangerates/{currency}/buy", exchangeRate.getId().getCurrency().name().toUpperCase()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(count)))
+                .andExpect(jsonPath("$.[0].currency", is(exchangeRate.getId().getCurrency().name())))
+                .andExpect(jsonPath("$.[0].bank.id", is(exchangeRate.getId().getBank().getId().intValue())));
     }
     
     @Test
