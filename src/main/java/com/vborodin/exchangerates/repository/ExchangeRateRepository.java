@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface ExchangeRateRepository extends PagingAndSortingRepository<ExchangeRate, ExchangeRateId> {
 
+    Iterable<ExchangeRate> findAll();
     Iterable<ExchangeRate> findByIdBankNameIgnoreCase(String bank);
     Iterable<ExchangeRate> findByIdCurrency(Currency currency);
     Iterable<ExchangeRate> findByIdBankNameIgnoreCaseAndIdCurrency(String bank, Currency currency);

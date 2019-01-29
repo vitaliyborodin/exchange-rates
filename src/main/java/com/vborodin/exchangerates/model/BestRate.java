@@ -14,6 +14,10 @@ public class BestRate implements Serializable {
     public BestRate() {
     }
 
+    public BestRate(Currency currency) {
+        this.currency = currency;
+    }
+
     public BestRate(Currency currency, BigDecimal buyRate, Bank buyBank, BigDecimal sellRate, Bank sellBank) {
         this.currency = currency;
         this.buyRate = buyRate;
@@ -61,4 +65,19 @@ public class BestRate implements Serializable {
     public void setSellBank(Bank sellBank) {
         this.sellBank = sellBank;
     }
+
+    public void setBuy(ExchangeRate rate){
+        if (rate != null){
+            this.buyRate = rate.getBuy();
+            this.buyBank = rate.getId().getBank();
+        }
+    }
+
+    public void setSell(ExchangeRate rate){
+        if (rate != null) {
+            this.sellRate = rate.getSell();
+            this.sellBank = rate.getId().getBank();
+        }
+    }
+
 }

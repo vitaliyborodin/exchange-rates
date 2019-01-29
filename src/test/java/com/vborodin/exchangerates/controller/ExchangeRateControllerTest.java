@@ -102,8 +102,8 @@ public class ExchangeRateControllerTest {
     public void exchangeRatesWithNonexistentCurrencyParam() throws Exception {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("currency", "NONEXISTENT"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", is("Currency not found")));
     }
 
     @Test
@@ -144,8 +144,8 @@ public class ExchangeRateControllerTest {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("currency", "NONEXISTENT")
                 .param("bank", "NONEXISTENT"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", is("Currency not found")));
     }
     
     @Test
@@ -153,8 +153,8 @@ public class ExchangeRateControllerTest {
         this.mvc.perform(get("/api/v1/exchangerates")
                 .param("currency", "NONEXISTENT")
                 .param("bank", exchangeRate.getId().getBank().getName()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("[]"));
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", is("Currency not found")));
     }
     
     @Test

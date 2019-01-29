@@ -1,14 +1,18 @@
 package com.vborodin.exchangerates.model;
 
-import java.util.Arrays;
+import com.vborodin.exchangerates.exception.ApiException;
+import org.springframework.http.HttpStatus;
+
 
 public enum Currency {
     UAH, USD, EUR, GBP;
 
     public static Currency find(String name){
-        return Arrays.stream(Currency.values())
-            .filter(value -> value.toString().equalsIgnoreCase(name))
-            .findFirst().orElse(null);
+        try {
+            return Currency.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException("Currency not found", HttpStatus.NOT_FOUND);
+        }
     }
 
 }
