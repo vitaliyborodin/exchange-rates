@@ -3,12 +3,15 @@ package com.vborodin.exchangerates.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Entity
 @JsonPropertyOrder({"id", "buy", "sell"})
@@ -25,6 +28,14 @@ public class ExchangeRate implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column(precision = 20, scale = 2)
     private BigDecimal sell;
+
+    @Column(nullable = false)
+    @CreationTimestamp
+    private Date createdDate;
+
+    @Column(nullable = false)
+    @UpdateTimestamp
+    private Date updatedDate;
 
     public ExchangeRate() {
     }
@@ -66,4 +77,19 @@ public class ExchangeRate implements Serializable {
         this.sell = sell;
     }
 
+    public Date getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(Date updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
 }
