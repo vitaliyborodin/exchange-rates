@@ -3,18 +3,21 @@ package com.vborodin.exchangerates.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @JsonPropertyOrder({"id", "buy", "sell"})
+@EntityListeners(AuditingEntityListener.class)
 public class ExchangeRate implements Serializable {
 
     @EmbeddedId
@@ -29,13 +32,13 @@ public class ExchangeRate implements Serializable {
     @Column(precision = 20, scale = 2)
     private BigDecimal sell;
 
-    @Column(nullable = false)
-    @CreationTimestamp
-    private Date createdDate;
+    @Column
+    @CreatedDate
+    private LocalDateTime createdDate;
 
-    @Column(nullable = false)
-    @UpdateTimestamp
-    private Date updatedDate;
+    @Column
+    @LastModifiedDate
+    private LocalDateTime updatedDate;
 
     public ExchangeRate() {
     }
@@ -77,19 +80,12 @@ public class ExchangeRate implements Serializable {
         this.sell = sell;
     }
 
-    public Date getUpdatedDate() {
+    public LocalDateTime getUpdatedDate() {
         return updatedDate;
     }
 
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
-    }
-
-    public Date getCreatedDate() {
+    public LocalDateTime getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
 }

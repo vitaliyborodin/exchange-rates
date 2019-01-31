@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Transactional
 public interface ExchangeRateRepository extends PagingAndSortingRepository<ExchangeRate, ExchangeRateId> {
@@ -23,7 +23,7 @@ public interface ExchangeRateRepository extends PagingAndSortingRepository<Excha
     Iterable<ExchangeRate> findByIdCurrencyAndBuyNotNull(Currency currency, Sort sort);
     Iterable<ExchangeRate> findByIdCurrencyAndSellNotNull(Currency currency, Sort sort);
     ExchangeRate findByIdCurrencyAndIdBankNameIgnoreCase(Currency currency, String bank);
-    Long deleteByUpdatedDateLessThan(Date date);
+    Long deleteByUpdatedDateLessThan(LocalDateTime date);
 
     @Transactional
     @Modifying
